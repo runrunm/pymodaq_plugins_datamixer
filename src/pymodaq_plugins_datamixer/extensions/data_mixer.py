@@ -8,7 +8,6 @@ from pymodaq.utils.config import get_set_preset_path
 from pymodaq.extensions.utils import CustomExt
 
 
-# todo: replace here *pymodaq_plugins_template* by your plugin package name
 from pymodaq_plugins_datamixer.utils import Config as PluginConfig
 
 logger = set_logger(get_module_name(__file__))
@@ -16,27 +15,16 @@ logger = set_logger(get_module_name(__file__))
 main_config = Config()
 plugin_config = PluginConfig()
 
-# todo: modify this as you wish
-EXTENSION_NAME = 'MY_EXTENSION_NAME'  # the name that will be displayed in the extension list in the
+EXTENSION_NAME = 'Data Mixer'  # the name that will be displayed in the extension list in the
 # dashboard
-CLASS_NAME = 'CustomExtensionTemplate'  # this should be the name of your class defined below
+CLASS_NAME = 'DataMixer'  # this should be the name of your class defined below
 
 
-# todo: modify the name of this class to reflect its application and change the name in the main
-# method at the end of the script
-class CustomExtensionTemplate(CustomExt):
-
-    # todo: if you wish to create custom Parameter and corresponding widgets. These will be
-    # automatically added as children of self.settings. Morevover, the self.settings_tree will
-    # render the widgets in a Qtree. If you wish to see it in your app, add is into a Dock
+class DataMixer(CustomExt):
     params = []
 
     def __init__(self, parent: gutils.DockArea, dashboard):
         super().__init__(parent, dashboard)
-
-        # info: in an extension, if you want to interact with ControlModules you have to use the
-        # object: self.modules_manager which is a ModulesManager instance from the dashboard
-
         self.setup_ui()
 
     def setup_docks(self):
@@ -53,10 +41,9 @@ class CustomExtensionTemplate(CustomExt):
         --------
         pyqtgraph.dockarea.Dock
         """
-        # todo: create docks and add them here to hold your widgets
-        # reminder, the attribute self.settings_tree will  render the widgets in a Qtree.
-        # If you wish to see it in your app, add is into a Dock
-        raise NotImplementedError
+        self.docks['settings'] = gutils.Dock('Settings')
+        self.dockarea.addDock(self.docks['settings'])
+        self.docks['settings'].addWidget(self.settings_tree)
 
     def setup_actions(self):
         """Method where to create actions to be subclassed. Mandatory
@@ -73,11 +60,11 @@ class CustomExtensionTemplate(CustomExt):
         --------
         ActionManager.add_action
         """
-        raise NotImplementedError(f'You have to define actions here')
+        pass
 
     def connect_things(self):
         """Connect actions and/or other widgets signal to methods"""
-        raise NotImplementedError
+        pass
 
     def setup_menu(self):
         """Non mandatory method to be subclassed in order to create a menubar
