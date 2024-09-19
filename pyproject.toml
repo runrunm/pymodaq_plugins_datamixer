@@ -8,7 +8,7 @@ readme = "README.rst"
 license = { file="LICENSE" }
 requires-python = ">=3.8"
 
-name = "pymodaq_plugins_template"
+name = "pymodaq_plugins_datamixer"
 
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -31,6 +31,7 @@ classifiers = [
 
 [tool.hatch.version]
 source = "vcs"
+fallback-version = '0.0.1'
 
 [tool.hatch.build.targets.sdist]
 include = [
