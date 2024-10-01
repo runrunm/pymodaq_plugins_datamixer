@@ -9,13 +9,12 @@ pymodaq_plugins_datamixer
    :target: https://pymodaq.readthedocs.io/en/stable/?badge=latest
    :alt: Documentation Status
 
-.. image:: https://github.com/PyMoDAQ/pymodaq_plugins_datamixer/actions/workflows/python-publish.yml/badge.svg
-   :target: https://github.com/PyMoDAQ/pymodaq_plugins_datamixer
-   :alt: Publication Status
+.. image:: https://github.com/PyMoDAQ/pymodaq_plugins_datamixer/workflows/Upload%20Python%20Package/badge.svg
+    :target: https://github.com/PyMoDAQ/pymodaq_plugins_datamixer
 
 .. image:: https://github.com/PyMoDAQ/pymodaq_plugins_datamixer/actions/workflows/Test.yml/badge.svg
     :target: https://github.com/PyMoDAQ/pymodaq_plugins_datamixer/actions/workflows/Test.yml
-    :alt: Tests
+
 
 Plugin exposing an extension to the DashBoard: the DataMixer allowing to mix data from other
 DashBoard detectors using scripted formula from the full name of the data.
