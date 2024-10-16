@@ -138,17 +138,7 @@ class DataMixer(CustomExt):
             self.dashboard.add_det('DataMixer', None, [], [], detector_modules,
                                    plug_type=DAQTypesEnum.DAQ0D.name,
                                    plug_subtype='DataMixer')
-            detector_modules[-1].controller = self
-            detector_modules[-1].master = False
-            detector_modules[-1].init_hardware_ui()
-            QtWidgets.QApplication.processEvents()
-            self.dashboard.poll_init(detector_modules[-1])
-            QtWidgets.QApplication.processEvents()
-
-            # Update actuators modules and module manager
-            self.dashboard.detector_modules.extend(detector_modules)
-            self.dashboard.update_module_manager()
-
+            self.dashboard.add_det_from_extension('DataMixer', 'DAQ0D', 'DataMixer', self)
             self.set_action_enabled('create_computed_detectors', False)
         except Exception as e:
             logger.exception(str(e))
