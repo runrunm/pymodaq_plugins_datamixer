@@ -1,26 +1,33 @@
-from pymodaq_plugins_datamixer.extensions.utils.model import DataMixerModel
+from pymodaq_plugins_datamixer.extensions.utils.model import DataMixerModel, np  # np will be used in method eval of the formula
 
 from pymodaq_data.data import DataToExport, DataWithAxes
+from pymodaq_gui.parameter import Parameter
 
 from pymodaq_plugins_datamixer.extensions.utils.parser import (
     extract_data_names, split_formulae, replace_names_in_formula)
 
 
 class DataMixerModelEquation(DataMixerModel):
-    param = [
+    params = [
+        {'title': 'Get Data:', 'name': 'get_data', 'type': 'bool_push', 'value': False,
+         'label': 'Get Data'},
         {'title': 'Edit Formula:', 'name': 'edit_formula', 'type': 'text', 'value': ''},
-        {'title': 'Data0D:', 'name': 'data0D', 'type': 'item_select',
+        {'title': 'Data0D:', 'name': 'data0D', 'type': 'itemselect',
          'value': dict(all_items=[], selected=[])},
-        {'title': 'Data1D:', 'name': 'data1D', 'type': 'item_select',
+        {'title': 'Data1D:', 'name': 'data1D', 'type': 'itemselect',
          'value': dict(all_items=[], selected=[])},
-        {'title': 'Data2D:', 'name': 'data2D', 'type': 'item_select',
+        {'title': 'Data2D:', 'name': 'data2D', 'type': 'itemselect',
          'value': dict(all_items=[], selected=[])},
-
-
+        {'title': 'DataND:', 'name': 'dataND', 'type': 'itemselect',
+         'value': dict(all_items=[], selected=[])},
     ]
 
-    pass
+    def ini_model(self):
+        self.show_data_list()
 
+    def update_settings(self, param: Parameter):
+        if param.name() == 'get_data':
+            self.show_data_list()
 
     def get_formulae(self) -> str:
         """ Read the content of the formula QTextEdit widget"""
@@ -34,10 +41,10 @@ class DataMixerModelEquation(DataMixerModel):
         data_list2D = dte.get_full_names('data2D')
         data_listND = dte.get_full_names('dataND')
 
-        self.data0D_list_widget.set_value(dict(all_items=data_list0D, selected=[]))
-        self.data1D_list_widget.set_value(dict(all_items=data_list1D, selected=[]))
-        self.data2D_list_widget.set_value(dict(all_items=data_list2D, selected=[]))
-        self.dataND_list_widget.set_value(dict(all_items=data_listND, selected=[]))
+        self.settings.child('data0D').setValue(dict(all_items=data_list0D, selected=[]))
+        self.settings.child('data1D').setValue(dict(all_items=data_list1D, selected=[]))
+        self.settings.child('data2D').setValue(dict(all_items=data_list2D, selected=[]))
+        self.settings.child('dataND').setValue(dict(all_items=data_listND, selected=[]))
 
     def process_dte(self, dte: DataToExport):
         formulae = split_formulae(self.get_formulae())
