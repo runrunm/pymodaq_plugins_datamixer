@@ -85,18 +85,6 @@ class DataMixer(CustomExt):
 
     def setup_actions(self):
         """Method where to create actions to be subclassed. Mandatory
-
-        Examples
-        --------
-        >>> self.add_action('quit', 'Quit', 'close2', "Quit program")
-        >>> self.add_action('grab', 'Grab', 'camera', "Grab from camera", checkable=True)
-        >>> self.add_action('load', 'Load', 'Open', "Load target file (.h5, .png, .jpg) or data from camera"
-            , checkable=False)
-        >>> self.add_action('save', 'Save', 'SaveAs', "Save current data", checkable=False)
-
-        See Also
-        --------
-        ActionManager.add_action
         """
         self.add_action('quit', 'Quit', 'close2', "Quit program")
         self.add_action('get_data', 'Get Data List', 'properties',
