@@ -6,35 +6,40 @@ import warnings
 from pathlib import Path
 from typing import Union, List
 
+import numpy as np  # to be imported within models
+
 from pymodaq_utils.utils import find_dict_in_list_from_key_val, get_entrypoints
 from pymodaq_utils.logger import set_logger, get_module_name
 
 from pymodaq_data.data import DataToExport
 
-from pymodaq_gui.managers.parameter_manager import ParameterManager
+from pymodaq_gui.managers.parameter_manager import ParameterManager, Parameter
 
 logger = set_logger(get_module_name(__file__))
 
 if TYPE_CHECKING:
+    from pymodaq_plugins_datamixer.extensions.data_mixer import DataMixer
     from pymodaq.utils.managers.modules_manager import ModulesManager
 
 
-class DataMixerModel(ParameterManager):
+class DataMixerModel:
 
     detectors_name: List[str] = []
     params = []
 
-    def __init__(self, modules_manager: 'ModulesManager'):
-        self.modules_manager = modules_manager
-        self.check_modules(modules_manager)
+    def __init__(self, data_mixer: 'DataMixer'):
+        self.data_mixer = data_mixer
+        self.modules_manager: ModulesManager = data_mixer.dashboard.modules_manager
+        self.settings: Parameter = self.data_mixer.settings.child('models', 'model_params')
 
-    def check_modules(self, modules_manager: 'ModulesManager'):
-        for det in self.detectors_name:
-            if det not in modules_manager.detectors_name:
-                logger.warning(f'The detector {det} defined in the DataMixer model is'
-                               f' not present in the Dashboard')
+    def ini_model_base(self):
+        """ Method to add things that should be executed before instantiating the model"""
+        self.ini_model()
 
     def ini_model(self):
+        pass
+
+    def update_settings(self, param: Parameter):
         pass
 
     def process_dte(self, measurements: DataToExport) -> DataToExport:
@@ -50,7 +55,6 @@ class DataMixerModel(ParameterManager):
         DataToExport: the converted input as 0D DataCalculated stored in a DataToExport
         """
         raise NotImplementedError
-
 
 
 def get_models(model_name=None):

@@ -1,6 +1,8 @@
 from qtpy import QtWidgets, QtCore
 import numpy as np
 
+from typing import Optional
+
 from pymodaq_gui import utils as gutils
 from pymodaq_utils.config import Config, ConfigError
 from pymodaq_utils.logger import set_logger, get_module_name
@@ -9,14 +11,14 @@ from pymodaq_data.data import DataToExport, DataWithAxes
 
 from pymodaq.utils.config import get_set_preset_path
 from pymodaq.extensions.utils import CustomExt
-from pymodaq_gui.parameter.pymodaq_ptypes.itemselect import ItemSelect
+
 from pymodaq_gui.plotting.data_viewers.viewer import ViewerDispatcher
+from pymodaq_gui.utils.widgets.qled import QLED
+from pymodaq_gui.parameter import utils as putils
 
 from pymodaq_plugins_datamixer.utils import Config as PluginConfig
-from pymodaq_plugins_datamixer.extensions.utils.parser import (
-    extract_data_names, split_formulae, replace_names_in_formula)
 from pymodaq.control_modules.utils import DAQTypesEnum
-from pymodaq_plugins_datamixer.extensions.utils.model import get_models
+from pymodaq_plugins_datamixer.extensions.utils.model import get_models, DataMixerModel
 
 logger = set_logger(get_module_name(__file__))
 
@@ -36,6 +38,7 @@ class DataMixer(CustomExt):
          'children': [
              {'title': 'Models class:', 'name': 'model_class', 'type': 'list',
               'limits': [d['name'] for d in models]},
+             {'title': 'Ini Model', 'name': 'ini_model', 'type': 'action', },
              {'title': 'Model params:', 'name': 'model_params', 'type': 'group', 'children': []},
 
          ]}]
@@ -45,7 +48,12 @@ class DataMixer(CustomExt):
     def __init__(self, parent: gutils.DockArea, dashboard):
         super().__init__(parent, dashboard)
 
+        self.model_class: Optional[DataMixerModel] = None
+
         self.setup_ui()
+
+        self.settings.child('models', 'ini_model').sigActivated.connect(
+            self.get_action('ini_model').trigger)
 
     def get_set_model_params(self, model_name):
         self.settings.child('models', 'model_params').clearChildren()
@@ -57,13 +65,6 @@ class DataMixer(CustomExt):
 
     def setup_docks(self):
         """Mandatory method to be subclassed to setup the docks layout
-
-        Examples
-        --------
-        >>>self.docks['ADock'] = gutils.Dock('ADock name')
-        >>>self.dockarea.addDock(self.docks['ADock'])
-        >>>self.docks['AnotherDock'] = gutils.Dock('AnotherDock name')
-        >>>self.dockarea.addDock(self.docks['AnotherDock'''], 'bottom', self.docks['ADock'])
 
         See Also
         --------
@@ -85,20 +86,6 @@ class DataMixer(CustomExt):
 
         splitter.addWidget(self.settings_tree)
 
-        self.docks['data'] = gutils.Dock('Data List')
-        self.dockarea.addDock(self.docks['data'], 'right')
-        widget_data = QtWidgets.QWidget()
-        widget_data.setLayout(QtWidgets.QVBoxLayout())
-        self.docks['data'].addWidget(widget_data)
-        widget_data.layout().addWidget(QtWidgets.QLabel('Data0D:'))
-        widget_data.layout().addWidget(self.data0D_list_widget)
-        widget_data.layout().addWidget(QtWidgets.QLabel('Data1D:'))
-        widget_data.layout().addWidget(self.data1D_list_widget)
-        widget_data.layout().addWidget(QtWidgets.QLabel('Data2D:'))
-        widget_data.layout().addWidget(self.data2D_list_widget)
-        widget_data.layout().addWidget(QtWidgets.QLabel('DataND:'))
-        widget_data.layout().addWidget(self.dataND_list_widget)
-
         self.docks['computed'] = gutils.Dock('Computed data')
         self.dockarea.addDock(self.docks['computed'], 'right')
 
@@ -112,24 +99,13 @@ class DataMixer(CustomExt):
     def setup_actions(self):
         """Method where to create actions to be subclassed. Mandatory
 
-        Examples
-        --------
-        >>> self.add_action('quit', 'Quit', 'close2', "Quit program")
-        >>> self.add_action('grab', 'Grab', 'camera', "Grab from camera", checkable=True)
-        >>> self.add_action('load', 'Load', 'Open', "Load target file (.h5, .png, .jpg) or data from camera"
-            , checkable=False)
-        >>> self.add_action('save', 'Save', 'SaveAs', "Save current data", checkable=False)
-
         See Also
         --------
         ActionManager.add_action
         """
         self.add_action('quit', 'Quit', 'close2', "Quit program")
-        self.add_action('get_data', 'Get Data List', 'properties',
-                        "Get the list of data from selected detectors")
-        self.add_action('compute', 'Compute Formulae', 'algo',
-                        'Compute the Formula when new data is available',
-                        checkable=True)
+        self.add_action('ini_model', 'Init Model', 'ini')
+        self.add_widget('model_led', QLED, toolbar=self.toolbar)
         self.add_action('snap', 'Snap Detectors', 'snap',
                         'Snap all selected detectors')
         self.add_action('create_computed_detectors', 'Create Computed Detectors', 'Add_Step',
@@ -138,12 +114,17 @@ class DataMixer(CustomExt):
     def connect_things(self):
         """Connect actions and/or other widgets signal to methods"""
         self.connect_action('quit', self.quit)
-        self.connect_action('get_data', self.show_data_list)
+        self.connect_action('ini_model', self.ini_model)
         self.modules_manager.det_done_signal.connect(self.process_data)
-        self.dte_computed_signal.connect(self.plot_formulae_results)
+        self.dte_computed_signal.connect(self.plot_computed_results)
         self.connect_action('snap', self.snap)
         self.modules_manager.detectors_changed.connect(self.update_connect_detectors)
         self.connect_action('create_computed_detectors', self.create_computed_detectors)
+
+    def process_data(self, dte: DataToExport):
+        if self.model_class is not None:
+            dte_computed = self.model_class.process_dte(dte)
+            self.dte_computed_signal.emit(dte_computed)
 
     def snap(self):
         self.modules_manager.grab_data()
@@ -151,10 +132,6 @@ class DataMixer(CustomExt):
     def create_computed_detectors(self):
         # Now that we have the module manager, load PID if it is checked in managers
         try:
-            detector_modules = []
-            self.dashboard.add_det('DataMixer', None, [], [], detector_modules,
-                                   plug_type=DAQTypesEnum.DAQ0D.name,
-                                   plug_subtype='DataMixer')
             self.dashboard.add_det_from_extension('DataMixer', 'DAQ0D', 'DataMixer', self)
             self.set_action_enabled('create_computed_detectors', False)
         except Exception as e:
@@ -178,13 +155,18 @@ class DataMixer(CustomExt):
         """
         self.modules_manager.connect_detectors(connect=connect)
 
-    def plot_formulae_results(self, dte):
+    def plot_computed_results(self, dte):
         self.dte_computed_viewer.show_data(dte)
 
     def ini_model(self):
-        try:
-            if self.model_class is None:
-                self.set_model()
+        if self.model_class is None:
+            self.set_model()
+
+        self.get_action('model_led').set_as_true()
+        self.set_action_enabled('ini_model', False)
+        self.settings.child('models', 'ini_model').setValue(True)
+
+        self.update_connect_detectors()
 
     def set_model(self):
         model_name = self.settings.child('models', 'model_class').value()
@@ -229,6 +211,9 @@ class DataMixer(CustomExt):
         """
         if param.name() == 'model_class':
             self.get_set_model_params(param.value())
+        elif param.name() in putils.iter_children(self.settings.child('models', 'model_params'), []):
+            if self.model_class is not None:
+                self.model_class.update_settings(param)
 
     def quit(self):
         self.mainwindow.close()
