@@ -44,16 +44,6 @@ class DataMixer(CustomExt):
     def setup_docks(self):
         """Mandatory method to be subclassed to setup the docks layout
 
-        Examples
-        --------
-        >>>self.docks['ADock'] = gutils.Dock('ADock name')
-        >>>self.dockarea.addDock(self.docks['ADock'])
-        >>>self.docks['AnotherDock'] = gutils.Dock('AnotherDock name')
-        >>>self.dockarea.addDock(self.docks['AnotherDock'''], 'bottom', self.docks['ADock'])
-
-        See Also
-        --------
-        pyqtgraph.dockarea.Dock
         """
         self.docks['settings'] = gutils.Dock('Settings')
         self.dockarea.addDock(self.docks['settings'])
@@ -90,6 +80,7 @@ class DataMixer(CustomExt):
 
         self.area_computed = gutils.DockArea()
         self.docks['computed'].addWidget(self.area_computed)
+
         self.dte_computed_viewer = ViewerDispatcher(self.area_computed)
 
     def setup_actions(self):
@@ -127,6 +118,46 @@ class DataMixer(CustomExt):
         self.connect_action('snap', self.snap)
         self.modules_manager.detectors_changed.connect(self.update_connect_detectors)
         self.connect_action('create_computed_detectors', self.create_computed_detectors)
+
+    def setup_menu(self):
+        """Non mandatory method to be subclassed in order to create a menubar
+
+        create menu for actions contained into the self._actions, for instance:
+
+        Examples
+        --------
+        >>>file_menu = self.mainwindow.menuBar().addMenu('File')
+        >>>self.affect_to('load', file_menu)
+        >>>self.affect_to('save', file_menu)
+
+        >>>file_menu.addSeparator()
+        >>>self.affect_to('quit', file_menu)
+
+        See Also
+        --------
+        pymodaq.utils.managers.action_manager.ActionManager
+        """
+        # todo create and populate menu using actions defined above in self.setup_actions
+        pass
+
+    def value_changed(self, param):
+        """ Actions to perform when one of the param's value in self.settings is changed from the
+        user interface
+
+        For instance:
+        if param.name() == 'do_something':
+            if param.value():
+                print('Do something')
+                self.settings.child('main_settings', 'something_done').setValue(False)
+
+        Parameters
+        ----------
+        param: (Parameter) the parameter whose value just changed
+        """
+        pass
+
+    def quit(self):
+        self.mainwindow.close()
 
     def snap(self):
         self.modules_manager.grab_data()
@@ -215,45 +246,6 @@ class DataMixer(CustomExt):
         self.data2D_list_widget.set_value(dict(all_items=data_list2D, selected=[]))
         self.dataND_list_widget.set_value(dict(all_items=data_listND, selected=[]))
 
-    def setup_menu(self):
-        """Non mandatory method to be subclassed in order to create a menubar
-
-        create menu for actions contained into the self._actions, for instance:
-
-        Examples
-        --------
-        >>>file_menu = self.mainwindow.menuBar().addMenu('File')
-        >>>self.affect_to('load', file_menu)
-        >>>self.affect_to('save', file_menu)
-
-        >>>file_menu.addSeparator()
-        >>>self.affect_to('quit', file_menu)
-
-        See Also
-        --------
-        pymodaq.utils.managers.action_manager.ActionManager
-        """
-        # todo create and populate menu using actions defined above in self.setup_actions
-        pass
-
-    def value_changed(self, param):
-        """ Actions to perform when one of the param's value in self.settings is changed from the
-        user interface
-
-        For instance:
-        if param.name() == 'do_something':
-            if param.value():
-                print('Do something')
-                self.settings.child('main_settings', 'something_done').setValue(False)
-
-        Parameters
-        ----------
-        param: (Parameter) the parameter whose value just changed
-        """
-        pass
-
-    def quit(self):
-        self.mainwindow.close()
 
 
 def main():
