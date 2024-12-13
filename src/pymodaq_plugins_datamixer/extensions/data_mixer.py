@@ -235,9 +235,8 @@ class DataMixer(CustomExt):
         self.dataND_list_widget.set_value(dict(all_items=data_listND, selected=[]))
 
 
-
 def main():
-    from pymodaq.utils.gui_utils.utils import mkQApp
+    from pymodaq_gui.utils.utils import mkQApp
     from pymodaq.utils.gui_utils.loader_utils import load_dashboard_with_preset
 
     app = mkQApp('DataMixer')
