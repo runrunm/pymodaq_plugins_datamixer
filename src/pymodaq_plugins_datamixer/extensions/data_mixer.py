@@ -66,9 +66,6 @@ class DataMixer(CustomExt):
     def setup_docks(self):
         """Mandatory method to be subclassed to setup the docks layout
 
-        See Also
-        --------
-        pyqtgraph.dockarea.Dock
         """
         self.docks['settings'] = gutils.Dock('Settings')
         self.dockarea.addDock(self.docks['settings'])
@@ -91,6 +88,7 @@ class DataMixer(CustomExt):
 
         self.area_computed = gutils.DockArea()
         self.docks['computed'].addWidget(self.area_computed)
+
         self.dte_computed_viewer = ViewerDispatcher(self.area_computed)
 
         if len(self.models) != 0:
@@ -99,9 +97,6 @@ class DataMixer(CustomExt):
     def setup_actions(self):
         """Method where to create actions to be subclassed. Mandatory
 
-        See Also
-        --------
-        ActionManager.add_action
         """
         self.add_action('quit', 'Quit', 'close2', "Quit program")
         self.add_action('ini_model', 'Init Model', 'ini')
