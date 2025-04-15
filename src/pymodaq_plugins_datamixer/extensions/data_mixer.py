@@ -125,7 +125,6 @@ class DataMixer(CustomExt):
         self.modules_manager.grab_data()
 
     def create_computed_detectors(self):
-        # Now that we have the module manager, load PID if it is checked in managers
         try:
             self.dashboard.add_det_from_extension('DataMixer', 'DAQ0D', 'DataMixer', self)
             self.set_action_enabled('create_computed_detectors', False)
