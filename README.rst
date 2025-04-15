@@ -16,8 +16,11 @@ pymodaq_plugins_datamixer
     :target: https://github.com/PyMoDAQ/pymodaq_plugins_datamixer/actions/workflows/Test.yml
 
 
-Plugin exposing an extension to the DashBoard: the DataMixer allowing to mix data from other
-DashBoard detectors using scripted formula from the full name of the data.
+Plugin exposing an extension to the DashBoard: the DataMixer allowing to mix data from other DashBoard detectors using
+scripted formula from the full name of the data or from more complex model allowing a form of live post-analysis. The
+data out of the formula or out of the models can be used within the DashBoard for other extensions (for instance live
+plots in a scan)
+
 
 Authors
 =======
@@ -43,7 +46,10 @@ Extensions
 ==========
 
 * DataMixer: extension to the DashBoard: the DataMixer. It allows to mix data from other
-  DashBoard detectors using scripted formula from the full name of the data.
+  DashBoard detectors using scripted formula from the full name of the data or from more complex model allowing a form
+  of live post-analysis. The data out of the formula or out of the models can be used within the DashBoard for other
+  extensions (for instance live plots in a scan)
+
 
 Installation instructions
 =========================
