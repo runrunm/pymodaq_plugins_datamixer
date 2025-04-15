@@ -122,12 +122,13 @@ class DataMixer(CustomExt):
             self.dte_computed_signal.emit(dte_computed)
 
     def snap(self):
-        self.modules_manager.grab_data()
+        self.modules_manager.grab_data(check_do_override=False)
 
     def create_computed_detectors(self):
         try:
             self.dashboard.add_det_from_extension('DataMixer', 'DAQ0D', 'DataMixer', self)
             self.set_action_enabled('create_computed_detectors', False)
+            self.dashboard.override_det_from_extension(self.modules_manager.selected_detectors_name)
         except Exception as e:
             logger.exception(str(e))
             pass

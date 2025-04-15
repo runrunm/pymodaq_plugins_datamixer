@@ -23,7 +23,7 @@ authors = [
     {name='Sebastien J. Weber', email='sebastien.weber@cnrs.fr'}
 ]
 dependencies = [
-    "pymodaq>5.0.0"
+    "pymodaq>=5.1.0"
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
