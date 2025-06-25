@@ -12,6 +12,7 @@ from pymodaq_plugins_datamixer.extensions.utils.parser import (
 
 
 def gaussian_fit(x, amp, x0, dx, offset):
+    dx = abs(dx)
     return amp * gauss1D(x, x0, dx) + offset
 
 
@@ -28,7 +29,7 @@ class DataMixerModelFit(DataMixerModel):
 
     def process_dte(self, dte: DataToExport):
         dte_processed = DataToExport('computed')
-        dwa = dte.get_data_from_full_name('Spectrum - ROI_00/Hlineout_ROI_00').deepcopy()
+        dwa = dte.get_data_from_full_name('Spectro/Spectro').deepcopy()
 
         dte_processed.append(dwa)
         dte_processed.append(dwa.fit(gaussian_fit, self.get_guess(dwa)))
