@@ -4,7 +4,7 @@ from pymodaq_plugins_datamixer.extensions.utils.model import DataMixerModel, np 
 
 from pymodaq_utils.math_utils import gauss1D, my_moment
 
-from pymodaq_data.data import DataToExport, DataWithAxes
+from pymodaq_data.data import DataToExport, DataWithAxes, DataCalculated
 from pymodaq_gui.parameter import Parameter
 
 from pymodaq_plugins_datamixer.extensions.utils.parser import (
@@ -30,9 +30,13 @@ class DataMixerModelFit(DataMixerModel):
     def process_dte(self, dte: DataToExport):
         dte_processed = DataToExport('computed')
         dwa = dte.get_data_from_full_name('Spectro/Spectro').deepcopy()
+        dwa_fit = dwa.fit(gaussian_fit, self.get_guess(dwa))
+        dwa.append(dwa_fit)
+
 
         dte_processed.append(dwa)
-        dte_processed.append(dwa.fit(gaussian_fit, self.get_guess(dwa)))
+        dte_processed.append(DataCalculated('Coeffs', data=[np.atleast_1d(coeff) for coeff in dwa_fit.fit_coeffs[0]],
+                                                      labels=['amp', 'x0', 'dx', 'offset']))
 
         return dte_processed
 
